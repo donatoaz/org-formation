@@ -5,25 +5,25 @@ OrganizationUpdate:
   Type: update-organization
   Template: ./organization.yml
 
-OrganizationBuild:
-  Type: include
-  DependsOn: OrganizationUpdate
-  Path: ./tasks/org-build/_tasks.yml
-
-# Types:
+# OrganizationBuild:
 #   Type: include
-#   DependsOn: OrganizationBuild
-#   Path: ./_types.yml
+#   DependsOn: OrganizationUpdate
+#   Path: ./tasks/org-build/_tasks.yml
+
+Types:
+  Type: include
+  # DependsOn: OrganizationBuild
+  Path: ./_types.yml
 
 # SeviceControlPolicies:
 #   Type: include
-#   DependsOn: [ OrganizationBuild, Types ]
+#   DependsOn: [ Types ]
 #   Path: ./tasks/scps/_tasks.yml
 
-# SecureDefaults:
-#   Type: include
-#   DependsOn: [ OrganizationBuild, Types ]
-#   Path: ./templates/020-secure-defaults/_tasks.yml
+SecureDefaults:
+  Type: include
+  DependsOn: [ Types ]
+  Path: ./tasks/secure-defaults/_tasks.yml
 
 # ServiceQuotas:
 #   Type: include
@@ -55,11 +55,9 @@ OrganizationBuild:
 #   DependsOn: [ OrganizationBuild ]
 #   Path: ./templates/080-aws-config-inventory/_tasks.yml
 
-# AwsSso:
-#   Type: include
-#   DependsOn: [ 
-#     OrganizationBuild, 
-#     Types, 
-#     SeviceControlPolicies 
-#   ]
-#   Path: ./tasks/sso/_tasks.yml
+AwsSso:
+  Type: include
+  DependsOn: [ 
+    Types
+  ]
+  Path: ./tasks/sso/_tasks.yml

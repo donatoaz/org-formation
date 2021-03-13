@@ -15,10 +15,10 @@ Parameters:
     Type: String
     Default: '906767a38e-19f9920c-8c42-438c-a6a3-acac8e43d2d2'
 
-  # # Principal ID from Identity Provider's group used by developers
-  # developerGroup:
-  #   Type: String
-  #   Default: '{{sso-developer-group-id}}'
+  # Principal ID from Identity Provider's group used by developers
+  developerGroup:
+    Type: String
+    Default: '906767a38e-9da14f04-54b0-4816-82c2-0d2049578ee8'
 
 SsoAdministrator:
   Type: update-stacks
@@ -26,7 +26,6 @@ SsoAdministrator:
   StackName: !Sub '${resourcePrefix}-${appName}-admin'
   StackDescription: 'Full permission role used by Admin group within whole organization'
   TerminationProtection: false
-  # DefaultOrganizationBindingRegion: !Ref primaryRegion
   DefaultOrganizationBindingRegion: !Ref primaryRegion
   DefaultOrganizationBinding:
     IncludeMasterAccount: true
@@ -41,67 +40,44 @@ SsoAdministrator:
     sessionDuration: 'PT1H'
     masterAccountId: !Ref ManagementAccount
 
-# SsoDeveloper:
-#   Skip: true
-#   Type: update-stacks
-#   Template: ./aws-sso.yml
-#   StackName: !Sub '${resourcePrefix}-${appName}-developer'
-#   StackDescription: 'Read and Write role used by Developer group within SDLC organizational units'
-#   TerminationProtection: false
-#   DefaultOrganizationBindingRegion: !Ref primaryRegion
-#   DefaultOrganizationBinding:
-#     IncludeMasterAccount: true
-#   OrganizationBindings:
-#     TargetBinding:
-#       OrganizationalUnit:
-#         - !Ref DevOU
-#   Parameters:
-#     instanceArn: !Ref instanceArn
-#     principalId: !Ref developerGroup
-#     permissionSetName: 'Developer'
-#     managedPolicies: [ 'arn:aws:iam::aws:policy/PowerUserAccess' ]
-#     sessionDuration: 'PT12H'
+# Devs are trusted to have admin access to accounts
+SsoDeveloper:
+  Type: update-stacks
+  Template: ./aws-sso.yml
+  StackName: !Sub '${resourcePrefix}-${appName}-developer'
+  StackDescription: 'Read and Write role used by Developer group within DevOU'
+  TerminationProtection: false
+  DefaultOrganizationBindingRegion: !Ref primaryRegion
+  DefaultOrganizationBinding:
+    IncludeMasterAccount: true
+  OrganizationBindings:
+    TargetBinding:
+      OrganizationalUnit: !Ref DevOU
+  Parameters:
+    instanceArn: !Ref instanceArn
+    principalId: !Ref developerGroup
+    permissionSetName: 'Developer'
+    managedPolicies: [ 'arn:aws:iam::aws:policy/PowerUserAccess' ]
+    sessionDuration: 'PT12H'
 
-# SsoAuditor:
-#   Skip: true
-#   Type: update-stacks
-#   Template: ./aws-sso.yml
-#   StackName: !Sub '${resourcePrefix}-${appName}-auditor'
-#   StackDescription: 'Audit role used by Auditor group within whole organization'
-#   TerminationProtection: false
-#   DefaultOrganizationBindingRegion: !Ref primaryRegion
-#   DefaultOrganizationBinding:
-#     IncludeMasterAccount: true
-#   OrganizationBindings:
-#     TargetBinding:
-#       Account: '*'
-#   Parameters:
-#     instanceArn: !Ref instanceArn
-#     principalId: !Ref auditorGroup
-#     permissionSetName: 'Auditor'
-#     managedPolicies: [ 'arn:aws:iam::aws:policy/SecurityAudit' ]
-#     sessionDuration: 'PT1H'
-
-# SsoViewer:
-#   Skip: true
-#   Type: update-stacks
-#   Template: ./aws-sso.yml
-#   StackName: !Sub '${resourcePrefix}-${appName}-viewer'
-#   StackDescription: 'Read-only role used by Admin group within whole organization'
-#   TerminationProtection: false
-#   DefaultOrganizationBindingRegion: !Ref primaryRegion
-#   DefaultOrganizationBinding:
-#     IncludeMasterAccount: true
-#   OrganizationBindings:
-#     TargetBinding:
-#       OrganizationalUnit:
-#         - !Ref DevOU
-#         # - !Ref SdlcOu
-#         # - !Ref ProdOu
-#   Parameters:
-#     instanceArn: !Ref instanceArn
-#     principalId: !Ref adminGroup
-#     permissionSetName: 'Viewer'
-#     managedPolicies: [ 'arn:aws:iam::aws:policy/job-function/ViewOnlyAccess' ]
-#     sessionDuration: 'PT12H'
-#     masterAccountId: !Ref ManagementAccount
+SsoReadOnly:
+  Type: update-stacks
+  Template: ./aws-sso.yml
+  StackName: !Sub '${resourcePrefix}-${appName}-viewer'
+  StackDescription: 'Read-only role used by Admin group within whole organization'
+  TerminationProtection: false
+  DefaultOrganizationBindingRegion: !Ref primaryRegion
+  DefaultOrganizationBinding:
+    IncludeMasterAccount: true
+  OrganizationBindings:
+    TargetBinding:
+      OrganizationalUnit:
+        - !Ref DevOU
+        - !Ref ProdOU
+  Parameters:
+    instanceArn: !Ref instanceArn
+    principalId: !Ref adminGroup
+    permissionSetName: 'Viewer'
+    managedPolicies: [ 'arn:aws:iam::aws:policy/job-function/ViewOnlyAccess' ]
+    sessionDuration: 'PT12H'
+    masterAccountId: !Ref ManagementAccount
