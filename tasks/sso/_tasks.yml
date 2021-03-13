@@ -1,0 +1,107 @@
+Parameters:
+  <<: !Include '../../_parameters.yml'
+
+  appName:
+    Type: String
+    Default: 'sso'
+
+  # AWS SSO instance ARN
+  instanceArn:
+    Type: String
+    Default: 'arn:aws:sso:::instance/ssoins-7223de867cca2702'
+
+  # Principal ID from Identity Provider's group used by administrators
+  adminGroup:
+    Type: String
+    Default: '906767a38e-19f9920c-8c42-438c-a6a3-acac8e43d2d2'
+
+  # # Principal ID from Identity Provider's group used by developers
+  # developerGroup:
+  #   Type: String
+  #   Default: '{{sso-developer-group-id}}'
+
+SsoAdministrator:
+  Type: update-stacks
+  Template: ./aws-sso.yml
+  StackName: !Sub '${resourcePrefix}-${appName}-admin'
+  StackDescription: 'Full permission role used by Admin group within whole organization'
+  TerminationProtection: false
+  # DefaultOrganizationBindingRegion: !Ref primaryRegion
+  DefaultOrganizationBindingRegion: !Ref primaryRegion
+  DefaultOrganizationBinding:
+    IncludeMasterAccount: true
+  OrganizationBindings:
+    TargetBinding:
+      Account: '*'
+  Parameters:
+    instanceArn: !Ref instanceArn
+    principalId: !Ref adminGroup
+    permissionSetName: 'Administrator'
+    managedPolicies: [ 'arn:aws:iam::aws:policy/AdministratorAccess' ]
+    sessionDuration: 'PT1H'
+    masterAccountId: !Ref ManagementAccount
+
+# SsoDeveloper:
+#   Skip: true
+#   Type: update-stacks
+#   Template: ./aws-sso.yml
+#   StackName: !Sub '${resourcePrefix}-${appName}-developer'
+#   StackDescription: 'Read and Write role used by Developer group within SDLC organizational units'
+#   TerminationProtection: false
+#   DefaultOrganizationBindingRegion: !Ref primaryRegion
+#   DefaultOrganizationBinding:
+#     IncludeMasterAccount: true
+#   OrganizationBindings:
+#     TargetBinding:
+#       OrganizationalUnit:
+#         - !Ref DevOU
+#   Parameters:
+#     instanceArn: !Ref instanceArn
+#     principalId: !Ref developerGroup
+#     permissionSetName: 'Developer'
+#     managedPolicies: [ 'arn:aws:iam::aws:policy/PowerUserAccess' ]
+#     sessionDuration: 'PT12H'
+
+# SsoAuditor:
+#   Skip: true
+#   Type: update-stacks
+#   Template: ./aws-sso.yml
+#   StackName: !Sub '${resourcePrefix}-${appName}-auditor'
+#   StackDescription: 'Audit role used by Auditor group within whole organization'
+#   TerminationProtection: false
+#   DefaultOrganizationBindingRegion: !Ref primaryRegion
+#   DefaultOrganizationBinding:
+#     IncludeMasterAccount: true
+#   OrganizationBindings:
+#     TargetBinding:
+#       Account: '*'
+#   Parameters:
+#     instanceArn: !Ref instanceArn
+#     principalId: !Ref auditorGroup
+#     permissionSetName: 'Auditor'
+#     managedPolicies: [ 'arn:aws:iam::aws:policy/SecurityAudit' ]
+#     sessionDuration: 'PT1H'
+
+# SsoViewer:
+#   Skip: true
+#   Type: update-stacks
+#   Template: ./aws-sso.yml
+#   StackName: !Sub '${resourcePrefix}-${appName}-viewer'
+#   StackDescription: 'Read-only role used by Admin group within whole organization'
+#   TerminationProtection: false
+#   DefaultOrganizationBindingRegion: !Ref primaryRegion
+#   DefaultOrganizationBinding:
+#     IncludeMasterAccount: true
+#   OrganizationBindings:
+#     TargetBinding:
+#       OrganizationalUnit:
+#         - !Ref DevOU
+#         # - !Ref SdlcOu
+#         # - !Ref ProdOu
+#   Parameters:
+#     instanceArn: !Ref instanceArn
+#     principalId: !Ref adminGroup
+#     permissionSetName: 'Viewer'
+#     managedPolicies: [ 'arn:aws:iam::aws:policy/job-function/ViewOnlyAccess' ]
+#     sessionDuration: 'PT12H'
+#     masterAccountId: !Ref ManagementAccount
