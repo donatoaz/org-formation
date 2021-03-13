@@ -57,7 +57,7 @@ SsoDeveloper:
     instanceArn: !Ref instanceArn
     principalId: !Ref developerGroup
     permissionSetName: 'Developer'
-    managedPolicies: [ 'arn:aws:iam::aws:policy/PowerUserAccess' ]
+    managedPolicies: [ 'arn:aws:iam::aws:policy/AdministratorAccess' ]
     sessionDuration: 'PT12H'
 
 SsoReadOnly:
